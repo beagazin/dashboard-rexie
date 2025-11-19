@@ -1,16 +1,10 @@
+// lib/auth.ts
 import { cookies } from 'next/headers';
+import { Session, User, getAvatarUrl } from '@/types/session';
 
-export interface Session {
-  user: {
-    id: string;
-    username: string;
-    discriminator: string;
-    avatar: string | null;
-    email?: string;
-  };
-  accessToken: string;
-  expiresAt: number;
-}
+// Re-exportar tipos e funções para compatibilidade
+export type { Session, User };
+export { getAvatarUrl };
 
 export async function getSession(): Promise<Session | null> {
   const cookieStore = await cookies();
@@ -51,14 +45,4 @@ export async function setSession(session: Session) {
 export async function clearSession() {
   const cookieStore = await cookies();
   cookieStore.delete('rexie_session');
-}
-
-export function getAvatarUrl(user: Session['user']): string {
-  if (user.avatar) {
-    return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`;
-  }
-  
-  // Avatar padrão do Discord
-  const defaultAvatarNumber = parseInt(user.discriminator) % 5;
-  return `https://cdn.discordapp.com/embed/avatars/${defaultAvatarNumber}.png`;
 }

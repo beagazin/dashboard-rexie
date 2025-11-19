@@ -1,334 +1,41 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import SaveButton from "@/components/dashboard/SaveButton";
+import ConfigContent from "@/components/dashboard/config/ConfigContent";
 
-interface BotConfig {
-  name: string;
-  avatar: string;
-  color: string;
-  allowedRoles: string[];
-  maintenanceMode: boolean;
+async function getServers() {
+  // TODO: Buscar servidores reais
+  return [
+    {
+      id: "123456789",
+      name: "Meu Servidor",
+      icon: null,
+      memberCount: 150,
+    },
+  ];
 }
 
-export default function ConfigPage() {
-  const [config, setConfig] = useState<BotConfig>({
-    name: "Rexie Bot",
-    avatar: "",
-    color: "#9c6dfc",
-    allowedRoles: [],
-    maintenanceMode: false,
-  });
-
-  const [originalConfig, setOriginalConfig] = useState<BotConfig>(config);
-  const [hasChanges, setHasChanges] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [testMessageOpen, setTestMessageOpen] = useState(false);
-
-  // Simular roles do servidor
-  const [availableRoles, setAvailableRoles] = useState([
-    { id: "1", name: "Admin" },
-    { id: "2", name: "Moderador" },
-    { id: "3", name: "Staff" },
-  ]);
-
-  useEffect(() => {
-    // Detectar mudanças
-    setHasChanges(JSON.stringify(config) !== JSON.stringify(originalConfig));
-  }, [config, originalConfig]);
-
-  const handleSave = async () => {
-    setSaving(true);
-    
-    try {
-      // TODO: Implementar chamada à API
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      setOriginalConfig(config);
-      setHasChanges(false);
-      
-      // Mostrar notificação de sucesso
-      alert("Configurações salvas com sucesso!");
-    } catch (error) {
-      alert("Erro ao salvar configurações");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleReset = () => {
-    if (confirm("Tem certeza que deseja resetar todas as configurações? Esta ação não pode ser desfeita.")) {
-      // TODO: Implementar reset
-      alert("Configurações resetadas!");
-    }
-  };
-
-  const handleTestMessage = () => {
-    setTestMessageOpen(true);
-  };
-
-  const toggleRole = (roleId: string) => {
-    setConfig((prev) => ({
-      ...prev,
-      allowedRoles: prev.allowedRoles.includes(roleId)
-        ? prev.allowedRoles.filter((id) => id !== roleId)
-        : [...prev.allowedRoles, roleId],
-    }));
-  };
-
-  return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-200">
-              Configurações Gerais
-            </h1>
-            <p className="mt-1 text-sm text-gray-400">
-              Personalize o comportamento e aparência do seu bot
-            </p>
-          </div>
-          {hasChanges && <SaveButton onClick={handleSave} loading={saving} />}
-        </div>
-
-        {/* Configurações */}
-        <div className="space-y-6">
-          {/* Nome e Avatar */}
-          <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-200">
-              Aparência do BOT
-            </h2>
-            <div className="space-y-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-300">
-                  Nome do BOT
-                </label>
-                <input
-                  type="text"
-                  value={config.name}
-                  onChange={(e) =>
-                    setConfig((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-200 focus:border-[#9c6dfc] focus:outline-none focus:ring-2 focus:ring-[#9c6dfc]/20"
-                  placeholder="Digite o nome do bot"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-300">
-                  URL do Avatar
-                </label>
-                <input
-                  type="url"
-                  value={config.avatar}
-                  onChange={(e) =>
-                    setConfig((prev) => ({ ...prev, avatar: e.target.value }))
-                  }
-                  className="w-full rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-200 focus:border-[#9c6dfc] focus:outline-none focus:ring-2 focus:ring-[#9c6dfc]/20"
-                  placeholder="https://exemplo.com/avatar.png"
-                />
-                <p className="mt-1 text-xs text-gray-500">
-                  Deixe vazio para usar o avatar padrão
-                </p>
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-gray-300">
-                  Cor padrão das mensagens
-                </label>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="color"
-                    value={config.color}
-                    onChange={(e) =>
-                      setConfig((prev) => ({ ...prev, color: e.target.value }))
-                    }
-                    className="h-12 w-24 cursor-pointer rounded-lg border border-gray-700"
-                  />
-                  <input
-                    type="text"
-                    value={config.color}
-                    onChange={(e) =>
-                      setConfig((prev) => ({ ...prev, color: e.target.value }))
-                    }
-                    className="flex-1 rounded-lg border border-gray-700 bg-gray-800 px-4 py-2 text-gray-200 focus:border-[#9c6dfc] focus:outline-none focus:ring-2 focus:ring-[#9c6dfc]/20"
-                    placeholder="#9c6dfc"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Permissões */}
-          <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-200">
-              Permissões
-            </h2>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-300">
-                Cargos que podem usar comandos
-              </label>
-              <div className="space-y-2">
-                {availableRoles.map((role) => (
-                  <label
-                    key={role.id}
-                    className="flex items-center gap-3 rounded-lg border border-gray-700 bg-gray-800 p-3 hover:bg-gray-700"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={config.allowedRoles.includes(role.id)}
-                      onChange={() => toggleRole(role.id)}
-                      className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-[#9c6dfc] focus:ring-2 focus:ring-[#9c6dfc]/20"
-                    />
-                    <span className="text-sm text-gray-200">{role.name}</span>
-                  </label>
-                ))}
-              </div>
-              <p className="mt-2 text-xs text-gray-500">
-                Selecione os cargos que terão permissão para usar os comandos do bot
-              </p>
-            </div>
-          </div>
-
-          {/* Ações */}
-          <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-200">Ações</h2>
-            <div className="space-y-4">
-              {/* Modo Manutenção */}
-              <div className="flex items-center justify-between rounded-lg border border-gray-700 bg-gray-800 p-4">
-                <div>
-                  <p className="font-medium text-gray-200">Modo Manutenção</p>
-                  <p className="mt-1 text-sm text-gray-400">
-                    Desativa temporariamente todas as automações
-                  </p>
-                </div>
-                <label className="relative inline-flex cursor-pointer items-center">
-                  <input
-                    type="checkbox"
-                    checked={config.maintenanceMode}
-                    onChange={(e) =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        maintenanceMode: e.target.checked,
-                      }))
-                    }
-                    className="peer sr-only"
-                  />
-                  <div className="peer h-6 w-11 rounded-full bg-gray-700 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-600 after:bg-white after:transition-all after:content-[''] peer-checked:bg-[#9c6dfc] peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:ring-2 peer-focus:ring-[#9c6dfc]/20"></div>
-                </label>
-              </div>
-
-              {/* Testar Mensagem */}
-              <button
-                onClick={handleTestMessage}
-                className="w-full rounded-lg border border-gray-700 bg-gray-800 py-3 text-sm font-medium text-gray-200 hover:bg-gray-700"
-              >
-                Testar Mensagem
-              </button>
-
-              {/* Resetar Configurações */}
-              <button
-                onClick={handleReset}
-                className="w-full rounded-lg border border-red-500/20 bg-red-500/10 py-3 text-sm font-medium text-red-400 hover:bg-red-500/20"
-              >
-                Resetar Configurações (Modo Fábrica)
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal Testar Mensagem */}
-      {testMessageOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg border border-gray-800 bg-gray-900 p-6">
-            <h3 className="mb-4 text-lg font-semibold text-gray-200">
-              Testar Mensagem
-            </h3>
-            <p className="mb-4 text-sm text-gray-400">
-              Uma mensagem de teste será enviada no Discord para verificar as configurações.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => setTestMessageOpen(false)}
-                className="rounded-lg border border-gray-700 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => {
-                  alert("Mensagem de teste enviada!");
-                  setTestMessageOpen(false);
-                }}
-                className="rounded-lg bg-[#9c6dfc] px-4 py-2 text-sm text-white hover:bg-[#8c5dec]"
-              >
-                Enviar Teste
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </DashboardLayout>
-  );
-}
-
-// components/dashboard/SaveButton.tsx
-export default function SaveButton({
-  onClick,
-  loading,
+export default async function ConfigPage({
+  searchParams,
 }: {
-  onClick: () => void;
-  loading: boolean;
+  searchParams: { server?: string };
 }) {
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/signin");
+  }
+
+  const servers = await getServers();
+  const currentServer = servers[0];
+
   return (
-    <button
-      onClick={onClick}
-      disabled={loading}
-      className="fixed bottom-8 right-8 z-50 flex items-center gap-2 rounded-lg bg-[#9c6dfc] px-6 py-3 font-medium text-white shadow-lg hover:bg-[#8c5dec] disabled:opacity-50"
+    <DashboardLayout
+      session={session}
+      servers={servers}
+      currentServer={currentServer}
     >
-      {loading ? (
-        <>
-          <svg
-            className="h-5 w-5 animate-spin"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              className="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              strokeWidth="4"
-            />
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-            />
-          </svg>
-          Salvando...
-        </>
-      ) : (
-        <>
-          <svg
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          Salvar Alterações
-        </>
-      )}
-    </button>
+      <ConfigContent serverId={currentServer?.id} />
+    </DashboardLayout>
   );
 }

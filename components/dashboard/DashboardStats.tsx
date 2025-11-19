@@ -162,13 +162,6 @@ export function DashboardAlerts() {
       action: "Renovar agora",
       actionUrl: "/dashboard/licenses",
     },
-    {
-      id: "2",
-      type: "info",
-      message: "Nova atualização disponível para o BOT",
-      action: "Ver detalhes",
-      actionUrl: "#",
-    },
   ];
 
   if (alerts.length === 0) return null;

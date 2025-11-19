@@ -148,8 +148,3 @@ function ToastItem({ toast, onClose }: { toast: Toast; onClose: () => void }) {
     </div>
   );
 }
-
-// Exportar também um hook standalone para usar fora do Provider
-export function ToastContainer() {
-  return null; // Será renderizado pelo Provider
-}

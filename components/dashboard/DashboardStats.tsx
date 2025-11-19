@@ -1,3 +1,6 @@
+// components/dashboard/DashboardStats.tsx
+"use client";
+
 export function DashboardStats() {
   const stats = [
     {
@@ -68,7 +71,6 @@ export function DashboardStats() {
   );
 }
 
-// components/dashboard/DashboardLogs.tsx
 export function DashboardLogs() {
   const logs = [
     {
@@ -151,7 +153,6 @@ export function DashboardLogs() {
   );
 }
 
-// components/dashboard/DashboardAlerts.tsx
 export function DashboardAlerts() {
   const alerts = [
     {

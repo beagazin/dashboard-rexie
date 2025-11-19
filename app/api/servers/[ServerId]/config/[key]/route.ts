@@ -1,4 +1,3 @@
-// app/api/servers/[serverId]/config/[key]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 
@@ -31,15 +30,19 @@ export async function GET(
       enableCodiguin: false,
       codigList: "",
     },
-    "welcome": {
-      welcomeEnabled: true,
-      goodbyeEnabled: true,
-      welcomeChannel: "",
-      goodbyeChannel: "",
-      welcomeMessage: "Bem-vindo {user} ao {server}! Você é o membro #{member_count}!",
-      goodbyeMessage: "{user} saiu do servidor. Agora temos {member_count} membros.",
-      welcomeImage: "",
-      goodbyeImage: "",
+    "punishments": {
+      enabled: true,
+      banRoles: [],
+      warnRoles: [],
+      warningsToban: 3,
+      adv1Role: "",
+      adv2Role: "",
+      adv3Role: "",
+      banRole: "",
+      removeWhitelistOnBan: true,
+      autoExpireWarnings: false,
+      expirationDays: 30,
+      logChannel: "",
     },
     // Adicionar mais configs conforme necessário
   };

@@ -2,7 +2,9 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import { DashboardStats, DashboardLogs, DashboardAlerts } from "@/components/dashboard/DashboardComponents";
+import { DashboardAlerts } from "./DashboardAlerts";
+import DashboardStats from "./DashboardStats";
+import { DashboardLogs } from "./DashboardLogs";
 
 async function getServers() {
   // TODO: Implementar busca real de servidores

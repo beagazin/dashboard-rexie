@@ -1,11 +1,17 @@
-export function SuggestionsPage() {
+"use client";
+
+import { useState } from "react";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import SaveButton from "@/components/dashboard/SaveButton";
+
+export default function SuggestionsPage() { // ✅ Adicionar export default
   const [config, setConfig] = useState({
     enabled: true,
     channel: "",
   });
 
   return (
-    <DashboardLayout>
+    <DashboardLayout session={{} as any} servers={[]} currentServer={null}>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-200">Sistema de Sugestões</h1>
 
@@ -45,4 +51,16 @@ export function SuggestionsPage() {
           )}
         </div>
 
-        <div className="rounded-lg
+        <div className="rounded-lg border border-gray-800 bg-gray-900/50 p-6">
+          <h3 className="mb-3 font-semibold text-gray-200">Como Funciona</h3>
+          <div className="space-y-2 text-sm text-gray-400">
+            <p>• Membros usam o comando /sugestao para enviar ideias</p>
+            <p>• A sugestão é enviada automaticamente para o canal configurado</p>
+            <p>• O bot adiciona reações 👍 e 👎 para votação</p>
+            <p>• Staff pode marcar como aprovada, rejeitada ou em análise</p>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}

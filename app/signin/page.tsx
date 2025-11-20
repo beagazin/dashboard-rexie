@@ -1,7 +1,27 @@
 import Link from "next/link";
 import Logo from "@/components/ui/logo";
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: { error?: string; redirect?: string };
+}) {
+  // Se já estiver logado, redirecionar
+  const session = await getSession();
+  if (session) {
+    redirect(searchParams.redirect || "/dashboard");
+  }
+
+  const errorMessages: Record<string, string> = {
+    no_code: "Código de autorização não recebido. Tente novamente.",
+    auth_failed: "Falha na autenticação. Por favor, tente novamente.",
+    config_missing: "Configuração do Discord incompleta. Contate o suporte.",
+  };
+
+  const errorMessage = searchParams.error ? errorMessages[searchParams.error] : null;
+
   return (
     <div className="flex min-h-screen flex-col bg-gray-950">
       {/* Header */}
@@ -31,6 +51,12 @@ export default function SignInPage() {
                 Faça login com sua conta do Discord para gerenciar seu BOT
               </p>
             </div>
+
+            {errorMessage && (
+              <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 p-3">
+                <p className="text-sm text-red-400">{errorMessage}</p>
+              </div>
+            )}
 
             <a
               href="/api/auth/discord"

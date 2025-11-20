@@ -1,4 +1,10 @@
-export function WelcomePage() {
+"use client";
+
+import { useState } from "react";
+import DashboardLayout from "@/components/dashboard/DashboardLayout";
+import SaveButton from "@/components/dashboard/SaveButton";
+
+export default function WelcomePage() { // ✅ Adicionar export default
   const [config, setConfig] = useState({
     welcomeEnabled: true,
     goodbyeEnabled: true,
@@ -19,7 +25,7 @@ export function WelcomePage() {
   ];
 
   return (
-    <DashboardLayout>
+    <DashboardLayout session={{} as any} servers={[]} currentServer={null}>
       <div className="space-y-6">
         <h1 className="text-2xl font-bold text-gray-200">Recepção e Despedida</h1>
 

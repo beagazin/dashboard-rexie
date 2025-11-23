@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";
-import ServerStatusContent from "@/components/dashboard/server-status/ServerStatusContent";
+import AutoRoleContent from "@/components/dashboard/auto-role/AutoRoleContent";
 
 async function getServers() {
   return [
@@ -13,7 +13,7 @@ async function getServers() {
   ];
 }
 
-export default async function ServerStatusPage() {
+export default async function AutoRolePage() {
   const session = await getSession();
 
   if (!session) {
@@ -29,7 +29,7 @@ export default async function ServerStatusPage() {
       servers={servers}
       currentServer={currentServer}
     >
-      <ServerStatusContent />
+      <AutoRoleContent />
     </DashboardLayout>
   );
 }

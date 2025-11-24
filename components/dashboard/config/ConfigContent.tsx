@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import SaveButton from "@/components/dashboard/SaveButton";
-import { useServerConfig } from "@/hooks/useServerConfig";
 
 interface BotConfig {
   name: string;
@@ -17,19 +16,18 @@ interface ConfigContentProps {
 }
 
 export default function ConfigContent({ serverId }: ConfigContentProps) {
-  const { config, setConfig, hasChanges, saving, saveConfig } =
-    useServerConfig<BotConfig>(
-      "general",
-      {
-        name: "Rexie Bot",
-        avatar: "",
-        color: "#9c6dfc",
-        allowedRoles: [],
-        maintenanceMode: false,
-      },
-      serverId
-    );
+  const [config, setConfig] = useState<BotConfig>({
+    name: "Rexie Bot",
+    avatar: "",
+    color: "#9c6dfc",
+    allowedRoles: [],
+    maintenanceMode: false,
+  });
 
+  const [originalConfig, setOriginalConfig] = useState<BotConfig>(config);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [testMessageOpen, setTestMessageOpen] = useState(false);
 
   // Mock data
@@ -39,13 +37,76 @@ export default function ConfigContent({ serverId }: ConfigContentProps) {
     { id: "3", name: "Staff" },
   ]);
 
+  // Carregar configurações ao montar o componente
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        if (!serverId) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`/api/servers/${serverId}/config/general`);
+        if (response.ok) {
+          const data = await response.json();
+          const loadedConfig = {
+            ...config,
+            ...data,
+            allowedRoles: data.allowedRoles || [],
+          };
+          setConfig(loadedConfig);
+          setOriginalConfig(loadedConfig);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar configurações:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadConfig();
+  }, [serverId]);
+
+  // Detectar mudanças
+  useEffect(() => {
+    setHasChanges(JSON.stringify(config) !== JSON.stringify(originalConfig));
+  }, [config, originalConfig]);
+
   const toggleRole = (roleId: string) => {
     setConfig((prev) => ({
       ...prev,
-      allowedRoles: prev.allowedRoles.includes(roleId)
+      allowedRoles: (prev.allowedRoles || []).includes(roleId)
         ? prev.allowedRoles.filter((id) => id !== roleId)
-        : [...prev.allowedRoles, roleId],
+        : [...(prev.allowedRoles || []), roleId],
     }));
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      if (serverId) {
+        const response = await fetch(`/api/servers/${serverId}/config/general`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(config),
+        });
+
+        if (!response.ok) {
+          throw new Error("Erro ao salvar");
+        }
+      }
+
+      setOriginalConfig(config);
+      setHasChanges(false);
+      alert("Configurações salvas com sucesso!");
+    } catch (error) {
+      alert("Erro ao salvar configurações");
+      console.error(error);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleReset = () => {
@@ -54,10 +115,45 @@ export default function ConfigContent({ serverId }: ConfigContentProps) {
         "Tem certeza que deseja resetar todas as configurações? Esta ação não pode ser desfeita."
       )
     ) {
-      // TODO: Implementar reset
-      alert("Configurações resetadas!");
+      const defaultConfig: BotConfig = {
+        name: "Rexie Bot",
+        avatar: "",
+        color: "#9c6dfc",
+        allowedRoles: [],
+        maintenanceMode: false,
+      };
+      setConfig(defaultConfig);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="text-center">
+          <svg
+            className="mx-auto h-8 w-8 animate-spin text-[#9c6dfc]"
+            fill="none"
+            viewBox="0 0 24 24"
+          >
+            <circle
+              className="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              className="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          <p className="mt-2 text-sm text-gray-400">Carregando configurações...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -71,7 +167,7 @@ export default function ConfigContent({ serverId }: ConfigContentProps) {
             Personalize o comportamento e aparência do seu bot
           </p>
         </div>
-        {hasChanges && <SaveButton onClick={saveConfig} loading={saving} />}
+        {hasChanges && <SaveButton onClick={handleSave} loading={saving} />}
       </div>
 
       {/* Configurações */}
@@ -157,7 +253,7 @@ export default function ConfigContent({ serverId }: ConfigContentProps) {
                 >
                   <input
                     type="checkbox"
-                    checked={config.allowedRoles.includes(role.id)}
+                    checked={(config.allowedRoles || []).includes(role.id)}
                     onChange={() => toggleRole(role.id)}
                     className="h-4 w-4 rounded border-gray-600 bg-gray-700 text-[#9c6dfc] focus:ring-2 focus:ring-[#9c6dfc]/20"
                   />

@@ -1,3 +1,4 @@
+// app/api/servers/[serverId]/config/[key]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 
@@ -11,9 +12,15 @@ export async function GET(
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
-  // TODO: Implementar busca real no banco de dados
-  // Por enquanto, retornar config padrão baseada na key
+  // Configurações padrão para cada módulo
   const defaultConfigs: Record<string, any> = {
+    "general": {
+      name: "Rexie Bot",
+      avatar: "",
+      color: "#9c6dfc",
+      allowedRoles: [], // IMPORTANTE: sempre retornar array vazio em vez de undefined
+      maintenanceMode: false,
+    },
     "auto-role": {
       enabled: true,
       roles: [],
@@ -27,6 +34,33 @@ export async function GET(
     "tickets": {
       enabled: true,
       categories: [],
+      enableCodiguin: false,
+      codigList: "",
+    },
+    "allowlist-auto": {
+      enabled: true,
+      category: "",
+      mainChannel: "",
+      viewRoles: [],
+      manageRoles: [],
+      resultsChannel: "",
+      approvedMessage: "✅ Sua allowlist foi aprovada! Bem-vindo ao servidor.",
+      rejectedMessage: "❌ Sua allowlist foi rejeitada. Tente novamente mais tarde.",
+      approvedRole: "",
+      questions: [],
+      enableCodiguin: false,
+      codigList: "",
+    },
+    "allowlist-manual": {
+      enabled: true,
+      category: "",
+      mainChannel: "",
+      resultsChannel: "",
+      viewRoles: [],
+      manageRoles: [],
+      approvedMessage: "✅ Sua allowlist foi aprovada! Bem-vindo ao servidor.",
+      rejectedMessage: "❌ Sua allowlist foi rejeitada. Tente novamente mais tarde.",
+      approvedRole: "",
       enableCodiguin: false,
       codigList: "",
     },
@@ -44,7 +78,40 @@ export async function GET(
       expirationDays: 30,
       logChannel: "",
     },
-    // Adicionar mais configs conforme necessário
+    "welcome": {
+      welcomeEnabled: true,
+      goodbyeEnabled: true,
+      welcomeChannel: "",
+      goodbyeChannel: "",
+      welcomeMessage: "Bem-vindo {user} ao {server}! Você é o membro #{member_count}!",
+      goodbyeMessage: "{user} saiu do servidor. Agora temos {member_count} membros.",
+      welcomeImage: "",
+      goodbyeImage: "",
+    },
+    "server-status": {
+      enabled: true,
+      showButtons: true,
+      connectButton: true,
+      connectUrl: "fivem://connect/ip:port",
+      shopButton: true,
+      shopUrl: "https://loja.exemplo.com",
+      showPlayers: true,
+      channelId: "",
+      serverIp: "",
+      serverPort: "",
+    },
+    "codes": {
+      enabled: true,
+    },
+    "suggestions": {
+      enabled: true,
+      channel: "",
+    },
+    "release-id": {
+      enabled: true,
+      logChannel: "",
+      notificationMessage: "🎉 Seu ID foi liberado! Você já pode entrar no servidor.",
+    },
   };
 
   const config = defaultConfigs[params.key] || {};
@@ -73,6 +140,7 @@ export async function PUT(
     
     return NextResponse.json({ success: true, config });
   } catch (error) {
+    console.error("Erro ao salvar configuração:", error);
     return NextResponse.json(
       { error: "Erro ao salvar configuração" },
       { status: 500 }

@@ -1,13 +1,25 @@
-// components/dashboard/DashboardHeader.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Session, getAvatarUrl } from "@/types/session";
+
+interface User {
+  id: string;
+  username: string;
+  discriminator: string;
+  avatar: string | null;
+  email?: string;
+}
+
+interface Session {
+  user: User;
+  accessToken: string;
+  expiresAt: number;
+}
 
 interface DashboardHeaderProps {
-  session: Session;
+  session: Session | null;
   currentServer: any;
   onMenuClick: () => void;
 }
@@ -19,6 +31,18 @@ interface Notification {
   message: string;
   timestamp: Date;
   read: boolean;
+}
+
+function getAvatarUrl(user: User | null): string {
+  if (!user) {
+    return "https://cdn.discordapp.com/embed/avatars/0.png";
+  }
+  
+  if (user.avatar) {
+    return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=128`;
+  }
+  const defaultAvatarNumber = parseInt(user.discriminator) % 5;
+  return `https://cdn.discordapp.com/embed/avatars/${defaultAvatarNumber}.png`;
 }
 
 export default function DashboardHeader({
@@ -60,19 +84,40 @@ export default function DashboardHeader({
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
+  // Se não tiver sessão, retorna um header vazio ou de loading
+  if (!session) {
+    return (
+      <header className="sticky top-0 z-30 border-b border-gray-800 bg-gray-950/95 backdrop-blur-sm">
+        <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onMenuClick}
+              className="rounded-lg p-2 text-gray-400 hover:bg-gray-800 hover:text-gray-200 lg:hidden"
+            >
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+            <Link href="/dashboard" className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#9c6dfc]">
+                <span className="text-lg font-bold text-white">R</span>
+              </div>
+              <span className="hidden text-lg font-bold text-[#9c6dfc] sm:inline">Rexie</span>
+            </Link>
+          </div>
+          <div className="h-8 w-32 animate-pulse rounded-lg bg-gray-800"></div>
+        </div>
+      </header>
+    );
+  }
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(event.target as Node)
-      ) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false);
       }
-      if (
-        notificationsRef.current &&
-        !notificationsRef.current.contains(event.target as Node)
-      ) {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
         setNotificationsOpen(false);
       }
     };
@@ -82,9 +127,7 @@ export default function DashboardHeader({
   }, []);
 
   const markAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
   };
 
   const markAllAsRead = () => {
@@ -139,18 +182,8 @@ export default function DashboardHeader({
             onClick={onMenuClick}
             className="rounded-lg p-2 text-gray-400 hover:bg-gray-800 hover:text-gray-200 lg:hidden"
           >
-            <svg
-              className="h-6 w-6"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
 
@@ -158,9 +191,7 @@ export default function DashboardHeader({
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#9c6dfc]">
               <span className="text-lg font-bold text-white">R</span>
             </div>
-            <span className="hidden text-lg font-bold text-[#9c6dfc] sm:inline">
-              Rexie
-            </span>
+            <span className="hidden text-lg font-bold text-[#9c6dfc] sm:inline">Rexie</span>
           </Link>
         </div>
 
@@ -188,18 +219,8 @@ export default function DashboardHeader({
               onClick={() => setNotificationsOpen(!notificationsOpen)}
               className="relative rounded-lg p-2 text-gray-400 hover:bg-gray-800 hover:text-gray-200"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                />
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
               </svg>
               {unreadCount > 0 && (
                 <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs text-white">
@@ -210,15 +231,10 @@ export default function DashboardHeader({
 
             {notificationsOpen && (
               <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setNotificationsOpen(false)}
-                />
+                <div className="fixed inset-0 z-40" onClick={() => setNotificationsOpen(false)} />
                 <div className="absolute right-0 top-full z-50 mt-2 w-80 rounded-lg border border-gray-800 bg-gray-900 shadow-xl">
                   <div className="flex items-center justify-between border-b border-gray-800 p-4">
-                    <h3 className="font-semibold text-gray-200">
-                      Notificações
-                    </h3>
+                    <h3 className="font-semibold text-gray-200">Notificações</h3>
                     {unreadCount > 0 && (
                       <button
                         onClick={markAllAsRead}
@@ -231,22 +247,10 @@ export default function DashboardHeader({
                   <div className="max-h-96 overflow-y-auto">
                     {notifications.length === 0 ? (
                       <div className="p-8 text-center">
-                        <svg
-                          className="mx-auto h-12 w-12 text-gray-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                          />
+                        <svg className="mx-auto h-12 w-12 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                         </svg>
-                        <p className="mt-2 text-sm text-gray-400">
-                          Nenhuma notificação
-                        </p>
+                        <p className="mt-2 text-sm text-gray-400">Nenhuma notificação</p>
                       </div>
                     ) : (
                       <div className="divide-y divide-gray-800">
@@ -262,24 +266,16 @@ export default function DashboardHeader({
                             }`}
                           >
                             <div className="flex items-start gap-3">
-                              <div className="shrink-0">
-                                {getNotificationIcon(notification.type)}
-                              </div>
+                              <div className="shrink-0">{getNotificationIcon(notification.type)}</div>
                               <div className="flex-1 space-y-1">
                                 <div className="flex items-start justify-between gap-2">
-                                  <p className="text-sm font-medium text-gray-200">
-                                    {notification.title}
-                                  </p>
+                                  <p className="text-sm font-medium text-gray-200">{notification.title}</p>
                                   {!notification.read && (
                                     <span className="h-2 w-2 shrink-0 rounded-full bg-[#9c6dfc]" />
                                   )}
                                 </div>
-                                <p className="text-xs text-gray-400">
-                                  {notification.message}
-                                </p>
-                                <p className="text-xs text-gray-500">
-                                  {formatTimestamp(notification.timestamp)}
-                                </p>
+                                <p className="text-xs text-gray-400">{notification.message}</p>
+                                <p className="text-xs text-gray-500">{formatTimestamp(notification.timestamp)}</p>
                               </div>
                             </div>
                           </button>
@@ -317,30 +313,20 @@ export default function DashboardHeader({
                 viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
 
             {userMenuOpen && (
               <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setUserMenuOpen(false)}
-                />
+                <div className="fixed inset-0 z-40" onClick={() => setUserMenuOpen(false)} />
                 <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-lg border border-gray-800 bg-gray-900 py-2 shadow-xl">
                   <div className="border-b border-gray-800 px-4 pb-3">
                     <p className="text-sm font-medium text-gray-200">
                       {session.user.username}#{session.user.discriminator}
                     </p>
                     {session.user.email && (
-                      <p className="mt-1 text-xs text-gray-400">
-                        {session.user.email}
-                      </p>
+                      <p className="mt-1 text-xs text-gray-400">{session.user.email}</p>
                     )}
                   </div>
                   <div className="py-2">
@@ -349,24 +335,9 @@ export default function DashboardHeader({
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
                       Configurações
                     </Link>
@@ -375,18 +346,8 @@ export default function DashboardHeader({
                       className="flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
-                        />
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
                       </svg>
                       Minhas Licenças
                     </Link>
@@ -396,18 +357,8 @@ export default function DashboardHeader({
                       href="/api/auth/logout"
                       className="flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-gray-800"
                     >
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                        />
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                       </svg>
                       Desconectar
                     </a>

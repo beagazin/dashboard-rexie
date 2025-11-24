@@ -1,3 +1,4 @@
+// app/dashboard/allowlist/auto/page.tsx
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import DashboardLayout from "@/components/dashboard/DashboardLayout";

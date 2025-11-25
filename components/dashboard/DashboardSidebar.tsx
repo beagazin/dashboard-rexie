@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import ServerSelector from "./ServerSelector";
 import { Session } from "@/types/session";
 
@@ -22,6 +23,9 @@ export default function DashboardSidebar({
   onClose,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const [allowlistOpen, setAllowlistOpen] = useState(
+    pathname.includes("/allowlist")
+  );
 
   const menuItems = [
     {
@@ -66,13 +70,14 @@ export default function DashboardSidebar({
       ),
     },
     {
+      type: "submenu",
       name: "Allowlist",
       icon: (
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      submenu: [
+      items: [
         { name: "Automática", href: "/dashboard/allowlist/auto" },
         { name: "Manual", href: "/dashboard/allowlist/manual" },
       ],
@@ -138,6 +143,10 @@ export default function DashboardSidebar({
     return pathname === href;
   };
 
+  const isSubmenuActive = (items: any[]) => {
+    return items.some((item) => pathname === item.href);
+  };
+
   return (
     <>
       {/* Sidebar */}
@@ -194,29 +203,56 @@ export default function DashboardSidebar({
                   );
                 }
 
-                if (item.submenu) {
+                if (item.type === "submenu") {
+                  const isSubmenuItemActive = isSubmenuActive(item.items || []);
                   return (
-                    <div key={index} className="space-y-1">
-                      <div className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-400">
-                        {item.icon}
-                        <span>{item.name}</span>
-                      </div>
-                      <div className="ml-7 space-y-1">
-                        {item.submenu.map((subItem, subIndex) => (
-                          <Link
-                            key={subIndex}
-                            href={subItem.href}
-                            onClick={onClose}
-                            className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
-                              isActive(subItem.href)
-                                ? "bg-[#9c6dfc]/10 font-medium text-[#9c6dfc]"
-                                : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
-                            }`}
-                          >
-                            {subItem.name}
-                          </Link>
-                        ))}
-                      </div>
+                    <div key={index}>
+                      <button
+                        onClick={() => setAllowlistOpen(!allowlistOpen)}
+                        className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                          isSubmenuItemActive
+                            ? "bg-[#9c6dfc]/10 text-[#9c6dfc]"
+                            : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {item.icon}
+                          <span>{item.name}</span>
+                        </div>
+                        <svg
+                          className={`h-4 w-4 transition-transform ${
+                            allowlistOpen ? "rotate-180" : ""
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </button>
+                      {allowlistOpen && (
+                        <div className="ml-8 mt-1 space-y-1">
+                          {item.items?.map((subItem, subIndex) => (
+                            <Link
+                              key={subIndex}
+                              href={subItem.href}
+                              onClick={onClose}
+                              className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
+                                isActive(subItem.href)
+                                  ? "bg-[#9c6dfc]/10 font-medium text-[#9c6dfc]"
+                                  : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                              }`}
+                            >
+                              {subItem.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   );
                 }

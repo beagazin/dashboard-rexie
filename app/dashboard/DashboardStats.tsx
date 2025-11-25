@@ -1,4 +1,5 @@
-export default function DashboardStats() {
+// app/dashboard/DashboardStats.tsx
+export default function DashboardStats({ daysRemaining }: { daysRemaining: number }) {
   const stats = [
     {
       label: "Status do BOT",
@@ -12,15 +13,15 @@ export default function DashboardStats() {
       bgColor: "bg-green-400/10",
     },
     {
-      label: "Uso da Licença",
-      value: "15/30 dias",
+      label: "Dias Restantes",
+      value: `${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}`,
       icon: (
         <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
-      color: "text-blue-400",
-      bgColor: "bg-blue-400/10",
+      color: daysRemaining <= 7 ? "text-yellow-400" : "text-blue-400",
+      bgColor: daysRemaining <= 7 ? "bg-yellow-400/10" : "bg-blue-400/10",
     },
     {
       label: "Membros Online",
@@ -67,4 +68,3 @@ export default function DashboardStats() {
     </div>
   );
 }
-
